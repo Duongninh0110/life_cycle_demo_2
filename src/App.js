@@ -1,7 +1,9 @@
 import React, {Component}  from 'react';
 import logo from './logo.svg';
 import './App.css';
-import Person from './Person/Person'
+import Person from './Person/Person';
+import BlogPost from './BlogPost/BlogPost';
+import CommentList from './CommentList/CommentList';
 
 class App extends Component {
   state = {
@@ -10,15 +12,13 @@ class App extends Component {
   }
   constructor(props) {
     super(props);
-    console.log('[App.js] constructor');
   }
 
   static getDerivedStateFromProps() {
-    console.log('[App.js] getDerivedStateFromProps');
+    return null;
   }
 
   componentDidMount() {
-    console.log('[App.js] componentDidMount');
   }
 
   changePerson = () => {
@@ -29,11 +29,12 @@ class App extends Component {
   }
 
   render() {
-    console.log('[App.js] render');
     return(
         <div>
           <h1>Hi, Nii</h1>
           <Person click={this.changePerson} name={this.state.name} age={this.state.age}/>
+          <CommentList/>
+          <BlogPost id={2}/>
         </div>
     );
   }

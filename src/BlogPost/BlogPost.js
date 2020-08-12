@@ -1,27 +1,16 @@
+import React from 'react';
+import WithSubscription from '../hoc/WithSubscription';
+import TextBlock from '../TextBlock/TextBlock'
+
 class BlogPost extends React.Component {
-    constructor(props) {
-        super(props);
-        this.handleChange = this.handleChange.bind(this);
-        this.state = {
-            blogPost: DataSource.getBlogPost(props.id)
-        };
-    }
-
-    componentDidMount() {
-        DataSource.addChangeListener(this.handleChange);
-    }
-
-    componentWillUnmount() {
-        DataSource.removeChangeListener(this.handleChange);
-    }
-
-    handleChange() {
-        this.setState({
-            blogPost: DataSource.getBlogPost(this.props.id)
-        });
-    }
-
     render() {
-        return <TextBlock text={this.state.blogPost} />;
+        return <TextBlock text={this.props.data} />;
     }
 }
+
+const BlogPostWithSubscription = WithSubscription(
+    BlogPost,
+    (DataSource, props) => DataSource.getBlogPost(props.id)
+);
+
+export default BlogPostWithSubscription;
