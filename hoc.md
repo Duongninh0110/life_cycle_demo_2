@@ -1,72 +1,98 @@
-## Lifecycle function
-Component Lifecycle gồm 3 giai đoạn:
-+ creating
-+ updating
-+ unmounting 
+## Higher Order Component (HOC)
+Một HOC là một hàm nhận vào một component và trả về một component mới
 
-https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/
+### Lợi ích của HOC
 
-https://reactjs.org/docs/react-component.html#static-getderivedstatefromprops
+### Cách dùng HOC
 
-## Creating cycle
+### Lưu ý khi dùng HOC 
 
-Các methods được gọi khi một component dc tạo mới và insert vào DOM:
-+ constructor()
-+ static getDerivedStateFromProps()
-+ render()
-+ componentDidMount()
+#### Không thay đổi component gốc
 
-### constructor
+Không thay đôi component gốc trong bắng bất cứ cách gì (prototype hay bất cứ gì)
 
-### getDerivedStateFromProps
-where the state depends on changes in props over time
-It should return an object to update the state, or null to update nothing
+```
+function logProps(InputComponent) {
+  InputComponent.prototype.componentDidUpdate = function(prevProps) {
+    console.log('Current props: ', this.props);
+    console.log('Previous props: ', prevProps);
+  };
+  // The fact that we're returning the original input is a hint that it has
+  // been mutated.
+  return InputComponent;
+}
 
-### render
+// EnhancedComponent will log whenever props are received
+const EnhancedComponent = logProps(InputComponent);
+```
 
-### componentDidMount
-componentDidMount() is invoked immediately after a component is mounted (inserted into the tree). Initialization that requires DOM nodes should go here. If you need to load data from a remote endpoint, this is a good place to instantiate the network request.
+Vấn đề sảy ra: 
 
++ input component không thể được sử dụng tách biệt khỏi separately enhanced component
++ nếu một HOC khác cũng gọi tới component EnhancedComponent và cũng thay đổi function componentDidUpdate, các function tion của HOC đầu tiên sẽ bị overwrite
++ EnhancedComponent không làm việc được với function components, không có lifecycle methods.
 
-## Update cycle
+#### Truyền các props không liên quan tới HOC vào các thẻ được bao bọc
 
-Một component được update khi props thay đổi hoặc state thay đổi. Các methods được gọi khi update component
+dùng spread object: 
 
-+ static getDerivedStateFromProps()
-+ shouldComponentUpdate()
-+ render()
-+ getSnapshotBeforeUpdate()
-+ componentDidUpdate()
+```
+render() {
+  // Filter out extra props that are specific to this HOC and shouldn't be
+  // passed through
+  const { extraProp, ...passThroughProps } = this.props;
 
-### getDerivedStateFromProps
-where the state depends on changes in props over time
-It should return an object to update the state, or null to update nothing
+  // Inject props into the wrapped component. These are usually state values or
+  // instance methods.
+  const injectedProp = someStateOrInstanceMethod;
 
-### shouldComponentUpdate
-component chỉ được render khi shouldComponentUpdate return true
+  // Pass props to wrapped component
+  return (
+    <WrappedComponent
+      injectedProp={injectedProp}
+      {...passThroughProps}
+    />
+  );
+}
+```
 
-### render
+#### Tối đa hóa khả năng kết hợp
 
-### getSnapshotBeforeUpdate
-It enables your component to capture some information from the DOM (e.g. scroll position) before it is potentially changed. Any value returned by this lifecycle will be passed as a parameter to componentDidUpdate()
+HOC có thể nhận một hoặc nhiều tham số đầu vào
 
-### componentDidUpdate
+Không phải tất cả các HOCs đều nhìn giống nhau. Thỉnh thoảng chúng chấp nhận đối số duy nhất là thẻ được bọc
 
-componentDidUpdate() is invoked immediately after updating occurs. This method is not called for the initial render.
+```
+const NavbarWithRouter = withRouter(Navbar);
 
-Use this as an opportunity to operate on the DOM when the component has been updated.
+```
 
-This is also a good place to do network requests as long as you compare the current props to previous props 
+HOCs cũng thường xuyên chấp nhận thêm các đối số
 
-You may call setState() immediately in componentDidUpdate() but note that it must be wrapped in a condition like in the example above, or you’ll cause an infinite loop. 
+```
+const CommentWithRelay = Relay.createContainer(Comment, config);
+```
 
+HOC thường có dang:
 
+```
+// React Redux's `connect`
+const ConnectedComment = connect(commentSelector, commentActions)(CommentList);
+```
 
-## Unmounting
+cách viết trên có thể viết lại như sau
 
-Method được gọi khi một component được remove khỏi DOM
+```
+// connect is a function that returns another function
+const enhance = connect(commentListSelector, commentListActions);
+// The returned function is a HOC, which returns a component that is connected
+// to the Redux store
+const ConnectedComment = enhance(CommentList);
+```
 
-+ componentWillUnmount()
+Nói một cách khác connect là 1 hàm higher-order cái và nó trả về 1 HOC
+#### Không dùng HOC trong render method
 
-### componentWillUnmount
+#### Phải copy lại static method
 
+#### Ref không được truyền qua HOC
