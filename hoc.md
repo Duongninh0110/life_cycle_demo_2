@@ -3,7 +3,11 @@ Một HOC là một hàm nhận vào một component và trả về một compon
 
 ### Lợi ích của HOC
 
+Các component gần giống nhau, phần giống nhau sẽ được định nghĩa chung ở một nơi 
+
 ### Cách dùng HOC
+
+A HOC is a pure function with zero side-effects.
 
 ### Lưu ý khi dùng HOC 
 
